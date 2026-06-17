@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background: linear-gradient(135deg,#0f172a,#1e293b,#312e81);
+    min-height:100vh;
+    padding:15px;
+    color:white;
+}
+
+/* TOP BAR */
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.back-btn{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    border:none;
+    background:rgba(255,255,255,0.1);
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+}
+
+.title{
+    font-size:18px;
+    font-weight:600;
+}
+
+/* FILTERS */
+.filters{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    margin-bottom:15px;
+}
+
+.filter-btn{
+    padding:8px 14px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,0.2);
+    background:transparent;
+    color:white;
+    white-space:nowrap;
+    cursor:pointer;
+}
+
+.filter-btn.active{
+    background:#3b82f6;
+    border-color:#3b82f6;
+}
+
+/* LIST */
+.list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.notification-item{
+    padding:12px;
+    background:rgba(255,255,255,0.08);
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.notification-item:hover{
+    transform:scale(1.02);
+    background:rgba(255,255,255,0.12);
+}
+
+.nt-title{
+    font-weight:600;
+    font-size:14px;
+    margin-bottom:4px;
+}
+
+.nt-content{
+    font-size:13px;
+    opacity:0.8;
+}
+
+.nt-meta{
+    font-size:11px;
+    opacity:0.6;
+    margin-top:5px;
+}
+
+/* EMPTY */
+.empty{
+    text-align:center;
+    opacity:0.6;
+    padding:40px;
+}
+
+/* BUTTON */
+#enableNotificationsBtn{
+    width:100%;
+    margin-top:15px;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:#22c55e;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="title">Notifications</div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters" id="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="personal">Personal</button>
+    <button class="filter-btn" data-filter="application">Application</button>
+    <button class="filter-btn refund-filter" data-filter="refund">Refund</button>
+</div>
+
+<!-- LIST -->
+<div class="list" id="notificationsList">
+    <div class="empty">No notifications yet</div>
+</div>
+
+<button id="enableNotificationsBtn">Enable Notifications</button>
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { isSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDuM6XcepcHyOiewj8zdnaB-6D8X2SWMM0",
+    authDomain: "kopyra-34598.firebaseapp.com",
+    databaseURL: "https://kopyra-34598-default-rtdb.firebaseio.com",
+    projectId: "kopyra-34598",
+    storageBucket: "kopyra-34598.firebasestorage.app",
+    messagingSenderId: "1075499326033",
+    appId: "1:1075499326033:web:826cf2b862e355c38eb670",
+    measurementId: "G-TJ5XXWFF9Q"
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+const userType = localStorage.getItem('userType') || 'customer';
+const userId = localStorage.getItem('userId');
+alert("User ID = " + userId);
+if (!userId) {
+    window.location.href = 'login.html';
+}
+
+/* FILTER SETUP */
+let currentFilter = 'all';
+
+const refundBtn = document.querySelector('.refund-filter');
+if (refundBtn && userType === 'customer') {
+    refundBtn.style.display = 'none';
+}
+
+/* REALTIME NOTIFICATIONS */
+const notificationsRef = ref(database, `notifications/${userId}`);
+
+onValue(notificationsRef, (snapshot) => {
+    const list = document.getElementById('notificationsList');
+    const data = snapshot.val();
+
+    if (!data) {
+        list.innerHTML = `<div class="empty">No notifications yet</div>`;
+        return;
+    }
+
+    const arr = Object.entries(data)
+        .map(([id, val]) => ({ id, ...val }))
+        .sort((a,b) => b.timestamp - a.timestamp);
+
+    const filtered = filter(arr, currentFilter);
+
+    if (filtered.length === 0) {
+        list.innerHTML = `<div class="empty">No notifications in this category</div>`;
+        return;
+    }
+
+    list.innerHTML = filtered.map(n => `
+        <div class="notification-item"
+             data-type="${n.type}"
+             data-id="${n.id}">
+             
+            <div class="nt-title">${n.title}</div>
+            <div class="nt-content">${n.content}</div>
+            <div class="nt-meta">
+                ${n.type} • ${new Date(n.timestamp).toLocaleString()}
+            </div>
+        </div>
+    `).join('');
+
+    document.querySelectorAll('.notification-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const type = item.dataset.type;
+
+            if (type === 'status') {
+                window.location.href = 'track.html';
+            } else if (type === 'application') {
+                window.location.href = 'notification.html?filter=application';
+            } else if (type === 'refund') {
+                window.location.href = 'notification.html?filter=refund';
+            }
+        });
+    });
+});
+
+/* FILTER FUNCTION */
+function filter(arr, f) {
+    if (f === 'all') return arr;
+    if (f === 'personal') return arr.filter(n => n.type === 'personal' || n.type === 'status');
+    return arr.filter(n => n.type === f);
+}
+
+/* BUTTON FILTERS */
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function(){
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+    });
+});
+
+/* PUSH ENABLE */
+const VAPID_KEY = 'BP8BqTFx2h9sx0WdovN1q068j7WSc183XIJPo1Qr5Jffja5kzyD5cI1VE5uSFrKTnnFoFb4I0lkf7uC_XXY5de4';
+
+document.getElementById('enableNotificationsBtn').addEventListener('click', async () => {
+    try {
+        await Notification.requestPermission();
+
+const reg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+        const sub = await reg.pushManager.subscribe({
+            userVisibleOnly:true,
+            applicationServerKey: urlToUint8(VAPID_KEY)
+        });
+
+        const obj = sub.toJSON();
+
+        await set(ref(database, `push_subscriptions/${userId}`), {
+            endpoint: obj.endpoint,
+            keys: obj.keys,
+            timestamp: Date.now()
+        });
+
+        document.getElementById('enableNotificationsBtn').innerText = "Enabled ✔";
+
+    } catch(err){
+        console.log(err);
+    }
+});
+
+function urlToUint8(base64){
+    const padding = '='.repeat((4-base64.length%4)%4);
+    const base64safe = (base64+padding).replace(/-/g,'+').replace(/_/g,'/');
+    const raw = atob(base64safe);
+    return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+}
+
+</script>
+
+</body>
+</html>

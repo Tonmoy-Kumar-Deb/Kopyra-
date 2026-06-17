@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment - Kopyra</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+.longText{
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+body{
+  margin:0;
+  font-family:Poppins;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:#fff;
+  padding:20px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.back{
+  background:rgba(255,255,255,0.1);
+  border:none;
+  color:#fff;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+
+.searchBox {
+  display: flex;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.searchBox input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  padding: 12px;
+}
+body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.searchBox button{
+  padding:12px 16px;
+  border:none;
+  background:#2563eb;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* BILL */
+.bill{
+  background:rgba(255,255,255,0.08);
+  padding:18px;
+  border-radius:16px;
+  margin-top:10px;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin:6px 0;
+}
+
+.badge{
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:12px;
+}
+.logoRow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.logoImg{
+  width:45px;
+  height:45px;
+  min-width:45px;
+  max-width:45px;
+
+  min-height:45px;
+  max-height:45px;
+
+  border-radius:12px;
+  object-fit:cover;
+}
+
+.logoText{
+  font-size:22px;
+  font-weight:800;
+}
+
+.tag{
+  font-size:12px;
+  opacity:0.7;
+}
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.75);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:16px;
+}
+
+/* 🔥 DARK THEME POPUP */
+.popupBox{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  color:#fff;
+  width:100%;
+  max-width:360px;
+  max-height:90vh;
+  overflow-y:auto;
+
+  border-radius:16px;
+  padding:18px;
+
+  border:1px solid rgba(255,255,255,0.12);
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+
+.popupBox h3{
+  margin-bottom:10px;
+  color:#ffffff;
+}
+
+.popupBox p,
+.popupBox ul{
+  font-size:13px;
+  color:#cbd5e1;
+}
+
+.popupBox ul li{
+  margin:4px 0;
+}
+
+.popupBox button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+
+  background:#16a34a;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+.pending{background:#f59e0b33;color:#fbbf24}
+.accepted{background:#2563eb33;color:#60a5fa}
+.completed{background:#22c55e33;color:#4ade80}
+.delivered{background:#10b98133;color:#34d399}
+.rejected{background:#ef444433;color:#f87171}
+
+.subject{
+  display:flex;
+  justify-content:space-between;
+  margin:6px 0;
+  padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+.total{
+  font-size:18px;
+  font-weight:700;
+  margin-top:10px;
+}
+.infoRow{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:10px;
+  color:#cbd5e1;
+  font-size:13px;
+  cursor:pointer;
+}
+
+.infoIcon{
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.15);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:700;
+}
+
+
+
+
+.hidden{
+  display:none;
+}
+.pay{
+  margin-top:15px;
+  padding:12px;
+  background:#16a34a;
+  border:none;
+  color:#fff;
+  border-radius:12px;
+  width:100%;
+  font-weight:700;
+}
+.topBar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.small{
+  font-size:12px;
+  opacity:0.7;
+  margin-top:10px;
+  text-align:center;
+}
+
+.logo{
+  font-size:22px;
+  font-weight:800;
+  text-align:center;
+  margin-bottom:5px;
+}
+
+.tag{
+  font-size:12px;
+  text-align:center;
+  opacity:0.7;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+  <button class="back" onclick="history.back()">← Back</button>
+  <div>Payment</div>
+</div>
+
+<div class="searchBox">
+  <input id="tokenInput" placeholder="Enter Token Number">
+  <button class="searchBtn" onclick="search()">⌕</button>
+<button class="searchBtn"
+          onclick="openQRScanner()"
+          style="background:#16a34a;">
+    回
+  </button>
+</div>
+<div class="infoRow" onclick="showTokenInfo()">
+  <div class="infoIcon">i</div>
+  <div class="infoText">What is Token Number?</div>
+</div>
+<div id="result"></div>
+<div id="tokenPopup" class="popup hidden">
+  <div class="popupBox">
+
+    <h3>Token Number</h3>
+
+    <p>
+      Token Number is a 14 character code linked to your order.
+    </p>
+
+    <ul>
+      <li>It starts with letters (example: SP)</li>
+      <li>Example: SP000000000000</li>
+      <li>It is generated after booking</li>
+    </ul>
+
+    <button onclick="closeTokenInfo()">Close</button>
+
+  </div>
+</div>
+<div id="qrScanner" class="popup hidden">
+  <div class="popupBox">
+
+    <h3>Scan QR Code</h3>
+
+    <!-- CAMERA SCREEN -->
+    <div id="reader"></div>
+
+    <!-- BUTTONS -->
+    <button onclick="startCamera()" class="pay">回 Start Camera</button>
+
+    <label class="pay" style="display:block;text-align:center;margin-top:10px;">
+      ✉ Upload QR Image
+      <input type="file" accept="image/*" onchange="scanFile(this)" hidden>
+    </label>
+
+    <button onclick="closeQRScanner()" style="margin-top:10px;">
+      Close
+    </button>
+
+  </div>
+</div>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+function formatDate(timestamp){
+  if(!timestamp) return "-";
+  
+  const date = new Date(timestamp);
+  
+  const day = date.getDate();
+  const month = date.toLocaleString('en-IN', { month: 'short' });
+  const year = date.getFullYear();
+  
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  
+  const mins = minutes < 10 ? '0' + minutes : minutes;
+  
+  return `${day} ${month} ${year}, ${hours}:${mins} ${ampm}`;
+}
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDuM6XcepcHyOiewj8zdnaB-6D8X2SWMM0",
+  authDomain: "kopyra-34598.firebaseapp.com",
+  databaseURL: "https://kopyra-34598-default-rtdb.firebaseio.com",
+  projectId: "kopyra-34598"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+function search(){
+  const token = document.getElementById("tokenInput").value.trim();
+  if(!token){
+    alert("Enter token number");
+    return;
+  }
+
+  db.ref("Bookings/" + token).once("value", snap=>{
+    const data = snap.val();
+    const box = document.getElementById("result");
+
+    if(!data){
+      box.innerHTML = "<div class='bill'>No order found</div>";
+      return;
+    }
+
+    const status = data.status || "Waiting";
+
+    // -----------------------------
+    // AMOUNT CALCULATION
+    // -----------------------------
+    const subjectTotal =
+      (Number(data.subject1) || 0) +
+      (Number(data.subject2) || 0) +
+      (Number(data.subject3) || 0);
+
+    const extraCharges = Number(data.extraCharges) || 0;
+
+    const hasAnyAmount = subjectTotal > 0 || extraCharges > 0;
+    const priceNotSet = !hasAnyAmount;
+
+    // -----------------------------
+    // REJECTED
+    // -----------------------------
+    if (status === "Rejected") {
+      box.innerHTML = `
+        <div class="bill" style="text-align:center;color:#f87171;font-weight:700">
+          This token has been rejected by owner
+        </div>
+      `;
+      return;
+    }
+
+    // -----------------------------
+    // PRICE NOT SET (Accepted / Completed)
+    // -----------------------------
+    if (
+      (status === "Accepted" || status === "Completed") &&
+      priceNotSet
+    ) {
+      box.innerHTML = `
+        <div class="bill" style="text-align:center">
+          <div style="font-weight:700">Token No: ${token}</div>
+          <div style="margin-top:8px;color:#fbbf24">
+            Please wait, price is not set yet
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // -----------------------------
+    // INVALID STATUS
+    // -----------------------------
+    if (status !== "Accepted" && status !== "Completed") {
+      box.innerHTML = `
+        <div class="bill" style="text-align:center">
+          <div>Token No: ${token}</div>
+          <div style="margin-top:8px">Bill not ready</div>
+        </div>
+      `;
+      return;
+    }
+
+    // -----------------------------
+    // BILL DATA
+    // -----------------------------
+    let billDate = "-";
+
+    if (status === "Accepted") {
+      billDate = data.advancePaymentDateTime || data.createdAt;
+    }
+
+    if (status === "Completed") {
+      billDate = data.finalPaymentDateTime || data.createdAt;
+    }
+
+    const total =
+      (Number(data.subject1) || 0) +
+      (Number(data.subject2) || 0) +
+      (Number(data.subject3) || 0);
+
+    const advance = Math.round(total * 0.5);
+    const finalAmount = total + extraCharges;
+
+    const payable = status === "Accepted" ? advance : finalAmount;
+
+    let payText = "Pay Via UPI";
+    if (status === "Accepted") payText = "Pay Advance via UPI";
+    if (status === "Completed") payText = "Pay Final Amount via UPI";
+
+    // -----------------------------
+    // FINAL BILL UI
+    // -----------------------------
+    box.innerHTML = `
+      <div class="bill">
+
+        <div style="text-align:center;font-size:18px;font-weight:800;color:#60a5fa;margin-bottom:10px">
+          ${status === "Accepted" ? "ADVANCE PAYMENT BILL" : "FINAL PAYMENT BILL"}
+        </div>
+
+        <div class="topBar">
+          <div class="logoRow">
+            <img src="logo.jpg" class="logoImg">
+            <div>
+              <div class="logoText">KOPYRA</div>
+              <div class="tag">Assignments made easy</div>
+            </div>
+          </div>
+
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(token)}"
+               style="width:80px;height:80px;border-radius:10px;background:#fff;padding:5px">
+        </div>
+
+        <h3>${data.customerName || "Customer"}</h3>
+
+        <div class="row"><span>WhatsApp</span><span>${data.whatsapp || "-"}</span></div>
+        <div class="row"><span>Semester</span><span>${data.semester || "-"}</span></div>
+        <div class="row"><span>Department</span><span>${data.department || "-"}</span></div>
+        <div class="row"><span>Section</span><span>${data.section || "-"}</span></div>
+        <div class="row"><span>Roll No</span><span>${data.rollNumber || "-"}</span></div>
+
+        <div class="row longText">
+          <span>Institute</span>
+          <span style="text-align:right">${data.instituteName || "-"}</span>
+        </div>
+
+        <div style="margin-left:10px;margin-bottom:8px">
+          <div style="font-size:12px;opacity:0.7">Address</div>
+          <div style="text-align:left;word-break:break-word">
+            ${data.instituteAddress || "-"}
+          </div>
+        </div>
+
+        <div class="row"><span>Token No</span><span>${token}</span></div>
+
+        <hr>
+        <h4>Work Details</h4>
+
+        ${(Array.isArray(data.subjects) ? data.subjects : []).map((item, index)=>`
+          <div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:12px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-weight:600">
+              <span>${item.name || "Subject " + (index+1)}</span>
+              <span>₹${item.price || 0}</span>
+            </div>
+
+            <div style="margin-top:6px;font-size:12px;opacity:0.75;line-height:1.5;text-align:left">
+              Type: ${item.type || "-"} <br>
+              Binding: ${item.binding || "-"} <br>
+              Pages: ${item.pageNumber || "-"} <br>
+              Border: ${item.border || "-"} <br>
+              Work: ${item.workType || "-"} <br>
+              Urgent: ${item.urgent || "-"}
+            </div>
+          </div>
+        `).join("")}
+
+        <hr>
+
+        <div class="row"><span>UPI ID</span><span>${data.upiId || "-"}</span></div>
+
+        <div class="row">
+          <span>Bill Time</span>
+          <span>${formatDate(billDate)}</span>
+        </div>
+
+        <div class="row"><span>Total</span><span>₹${total}</span></div>
+
+        <div class="row">
+          <span><b>Payable</b></span>
+          <span><b>₹${payable}</b></span>
+        </div>
+
+        <hr>
+
+        <div style="text-align:center;font-size:12px;opacity:0.8">
+          We also accept cash payments
+        </div>
+
+        <button class="pay">${payText}</button>
+
+      </div>
+    `;
+  });
+}
+function showTokenInfo(){
+  document.getElementById("tokenPopup").classList.remove("hidden");
+}
+
+function closeTokenInfo(){
+  document.getElementById("tokenPopup").classList.add("hidden");
+}
+let html5QrCode;
+
+function openQRScanner(){
+  document.getElementById("qrScanner").classList.remove("hidden");
+  startCamera();
+}
+
+function startCamera(){
+
+  html5QrCode = new Html5Qrcode("reader");
+
+  html5QrCode.start(
+    { facingMode: "environment" }, // back camera
+    { fps: 10, qrbox: 250 },
+    (decodedText) => {
+
+      // SUCCESS: QR detected
+      document.getElementById("tokenInput").value = decodedText;
+
+      search(); // auto search token
+
+      closeQRScanner();
+    }
+  );
+}
+
+function scanFile(input){
+
+  const file = input.files[0];
+  if(!file) return;
+
+  const scanner = new Html5Qrcode("reader");
+
+  scanner.scanFile(file, true)
+    .then(decodedText => {
+      document.getElementById("tokenInput").value = decodedText;
+      search();
+      closeQRScanner();
+    })
+    .catch(() => {
+      alert("QR not found in image");
+    });
+}
+
+function closeQRScanner(){
+
+  document.getElementById("qrScanner").classList.add("hidden");
+
+  if(html5QrCode){
+    html5QrCode.stop().then(()=> html5QrCode.clear());
+  }
+}
+</script>
+
+</body>
+</html>

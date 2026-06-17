@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kopyra Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+*{
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+input, h2, .subtitle, .developer {
+    -webkit-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f172a,#1e293b,#312e81);
+}
+
+.app{
+    width:340px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(15px);
+    border-radius:25px;
+    padding:30px 20px;
+    text-align:center;
+    color:white;
+    box-shadow:0 0 40px rgba(0,0,0,0.4);
+    animation:fadeIn 1s ease;
+}
+
+.logo{
+    width:70px;
+    height:70px;
+    border-radius:20px;
+    margin-bottom:15px;
+    box-shadow:0 0 20px rgba(255,255,255,0.2);
+}
+
+h2{
+    font-size:22px;
+    letter-spacing:2px;
+}
+
+.subtitle{
+    font-size:13px;
+    opacity:0.7;
+    margin-bottom:20px;
+}
+
+.input{
+    width:100%;
+    margin:10px 0;
+    position:relative;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    border:none;
+    outline:none;
+    border-radius:12px;
+    background:rgba(255,255,255,0.15);
+    color:white;
+    font-size:14px;
+}
+
+input::placeholder{
+    color:#cbd5e1;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.signup{
+    background:#22c55e;
+    color:white;
+}
+
+.login{
+    background:#3b82f6;
+    color:white;
+}
+
+button:hover{
+    transform:scale(1.03);
+}
+
+#msg{
+    margin-top:12px;
+    font-size:13px;
+    min-height:18px;
+    opacity:0.9;
+}
+
+
+
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(30px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+.developer{
+    margin-top:25px;
+    padding-top:20px;
+    border-top:1px solid rgba(255,255,255,0.15);
+    font-size:11px;
+    opacity:0.6;
+    letter-spacing:0.5px;
+}
+
+.developer span{
+    display:block;
+    margin-top:3px;
+    font-weight:300;
+    opacity:0.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+    <img src="logo.jpg" class="logo">
+    <h2>KOPYRA</h2>
+    <div class="subtitle">Assignments Made Easy</div>
+
+    <div class="input">
+        <input type="email" id="email" placeholder="Email">
+    </div>
+
+    <div class="input">
+        <input type="password" id="password" placeholder="Password">
+    </div>
+
+    <button class="signup" onclick="signup()">Create Account</button>
+    <button class="login" onclick="login()">Login</button>
+
+    <div id="msg"></div>
+    <div class="loading" id="loading"></div>
+    
+    <div class="developer">
+        Developer Tonmoy Kumar Deb
+        <span>Made in Guwahati</span>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import { 
+    getDatabase, 
+    ref, 
+    set, 
+    get 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDuM6XcepcHyOiewj8zdnaB-6D8X2SWMM0",
+    authDomain: "kopyra-34598.firebaseapp.com",
+    databaseURL: "https://kopyra-34598-default-rtdb.firebaseio.com",
+    projectId: "kopyra-34598",
+    storageBucket: "kopyra-34598.firebasestorage.app",
+    messagingSenderId: "1075499326033",
+    appId: "1:1075499326033:web:826cf2b862e355c38eb670",
+    measurementId: "G-TJ5XXWFF9Q"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const msg = document.getElementById("msg");
+const loading = document.getElementById("loading");
+
+// Auto-login check: if user is already logged in, redirect to home
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        
+        localStorage.setItem("userId", user.uid);
+        localStorage.setItem("userEmail", user.email);
+        localStorage.setItem("userType", "customer");
+        localStorage.setItem("isLoggedIn", "true");
+      //  window.location.href = "home.html";
+    }
+});
+
+/* SIGNUP */
+window.signup = function(){
+    let email = document.getElementById("email").value;
+    let pass = document.getElementById("password").value;
+
+    if (!email || !pass) {
+        msg.innerText = "Please fill all fields ❌";
+        return;
+    }
+
+    loading.style.display = "block";
+    msg.innerText = "";
+
+    createUserWithEmailAndPassword(auth, email, pass)
+    .then((userCredential) => {
+
+    const user = userCredential.user;
+
+    // 🔥 CREATE UNIQUE CODE
+    const userCode = "C" + Math.floor(100000 + Math.random() * 900000);
+
+    const db = getDatabase(app);
+
+    // 🔥 SAVE USER DATA
+    set(ref(db, "Users/" + user.uid), {
+        email: user.email,
+        code: userCode,
+        createdAt: Date.now()
+    });
+
+    msg.innerText = "Account created ✔";
+
+    loading.style.display = "none";
+msg.innerText = "Account created ✔";
+})
+    .catch(() => {
+    loading.style.display = "none";
+    msg.innerText = "Signup failed. Try again ❌";
+});
+}
+
+/* LOGIN */
+window.login = function(){
+    let email = document.getElementById("email").value;
+    let pass = document.getElementById("password").value;
+
+    if (!email || !pass) {
+        msg.innerText = "Please fill all fields ❌";
+        return;
+    }
+
+    msg.innerText = "";
+    loading.innerText = "Checking credentials...";
+    loading.style.display = "block";
+
+    signInWithEmailAndPassword(auth, email, pass)
+.then((userCredential) => {
+
+    const user = userCredential.user;
+
+    // store local data
+    localStorage.setItem("userId", user.uid);
+    localStorage.setItem("userEmail", user.email);
+    localStorage.setItem("userType", "customer");
+    localStorage.setItem("isLoggedIn", "true");
+
+    const db = getDatabase(app);
+    const userRef = ref(db, "Users/" + user.uid);
+
+    // FETCH CODE
+    get(userRef).then((snapshot) => {
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        
+        if (data.code) {
+            alert("Your Code is: " + data.code);
+        } else {
+            alert("Login successful but no code found!");
+        }
+    } else {
+        alert("User data not found!");
+    }
+    
+    // ⏳ redirect AFTER alert closes
+    setTimeout(() => {
+        window.location.href = "home.html";
+    }, 1500);
+});
+
+})
+.catch(() => {
+    loading.style.display = "none";
+    msg.innerText = "Invalid email or password ❌";
+});
+}
+
+/* ======== KEYBOARD SUPPORT (Ctrl+C, Ctrl+V, Enter) ======== */
+document.addEventListener("keydown", function(e) {
+    // Ctrl+C (Copy)
+    if (e.ctrlKey && e.key === "c") {
+        const active = document.activeElement;
+        if (active && active.tagName === "INPUT") {
+            const selected = active.value.substring(active.selectionStart, active.selectionEnd);
+            if (selected) {
+                navigator.clipboard.writeText(selected);
+            }
+        }
+    }
+    
+    // Ctrl+V (Paste)
+    if (e.ctrlKey && e.key === "v") {
+        const active = document.activeElement;
+        if (active && active.tagName === "INPUT") {
+            e.preventDefault();
+            navigator.clipboard.readText().then(text => {
+                const start = active.selectionStart;
+                const end = active.selectionEnd;
+                active.value = active.value.substring(0, start) + text + active.value.substring(end);
+                active.selectionStart = active.selectionEnd = start + text.length;
+            });
+        }
+    }
+    
+    // Enter key (Login)
+    if (e.key === "Enter") {
+        e.preventDefault();
+        if (loading.style.display !== "block") {
+            login();
+        }
+    }
+});
+</script>
+</body>
+</html>
