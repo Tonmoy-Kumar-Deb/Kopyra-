@@ -14,7 +14,12 @@
     box-sizing:border-box;
     font-family:'Poppins',sans-serif;
 }
-
+body, * {
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
 body{
     background: linear-gradient(135deg,#0f172a,#1e293b,#312e81);
     min-height:100vh;
@@ -166,7 +171,7 @@ const firebaseConfig = {
     appId: "1:1075499326033:web:826cf2b862e355c38eb670",
     measurementId: "G-TJ5XXWFF9Q"
 };
-
+let allNotifications = [];
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
@@ -189,22 +194,29 @@ if (refundBtn && userType === 'customer') {
 const notificationsRef = ref(database, `notifications/${userId}`);
 
 onValue(notificationsRef, (snapshot) => {
-    const list = document.getElementById('notificationsList');
     const data = snapshot.val();
 
+    const list = document.getElementById('notificationsList');
+
     if (!data) {
-        list.innerHTML = `<div class="empty">No notifications yet</div>`;
+        allNotifications = [];
+        render();
         return;
     }
 
-    const arr = Object.entries(data)
+    allNotifications = Object.entries(data)
         .map(([id, val]) => ({ id, ...val }))
-        .sort((a,b) => b.timestamp - a.timestamp);
+        .sort((a, b) => b.timestamp - a.timestamp);
 
-    const filtered = filter(arr, currentFilter);
+    render();
+});
+function render() {
+    const list = document.getElementById('notificationsList');
+
+    const filtered = filter(allNotifications, currentFilter);
 
     if (filtered.length === 0) {
-        list.innerHTML = `<div class="empty">No notifications in this category</div>`;
+        list.innerHTML = `<div class="empty">No notifications</div>`;
         return;
     }
 
@@ -221,6 +233,9 @@ onValue(notificationsRef, (snapshot) => {
         </div>
     `).join('');
 
+    attachClicks();
+}
+function attachClicks() {
     document.querySelectorAll('.notification-item').forEach(item => {
         item.addEventListener('click', () => {
             const type = item.dataset.type;
@@ -234,21 +249,34 @@ onValue(notificationsRef, (snapshot) => {
             }
         });
     });
-});
-
+}
 /* FILTER FUNCTION */
 function filter(arr, f) {
+
     if (f === 'all') return arr;
-    if (f === 'personal') return arr.filter(n => n.type === 'personal' || n.type === 'status');
-    return arr.filter(n => n.type === f);
+
+    const map = {
+        personal: ['personal', 'status'],
+        application: ['application'],
+        refund: ['refund']
+    };
+
+    return arr.filter(n => map[f]?.includes(n.type));
 }
 
 /* BUTTON FILTERS */
 document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', function(){
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.addEventListener('click', function () {
+
+        document.querySelectorAll('.filter-btn')
+            .forEach(b => b.classList.remove('active'));
+
         this.classList.add('active');
+
         currentFilter = this.dataset.filter;
+
+        // 🔥 THIS IS STEP 5 (IMPORTANT)
+        render();
     });
 });
 
